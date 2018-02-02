@@ -12,10 +12,13 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gmail.aizperm.sign.PhotoSignerImpl;
+import com.gmail.aizperm.util.CommandArgs;
+import com.gmail.aizperm.util.FileUtil;
 import com.gmail.aizperm.vk.MessageDesc;
 import com.gmail.aizperm.vk.PhotoDownloader;
 import com.gmail.aizperm.vk.PhotoSenderImpl;
@@ -69,8 +72,12 @@ public class StartBot
                 {
                     try
                     {
+                        String body = message.getBody();
+                        String locale = getLocale(body);
+                        Integer type = getType(body);
+
                         byte[] sourceBytes = IOUtils.toByteArray(new FileInputStream(path));
-                        byte[] signedBytes = new PhotoSignerImpl().sign(sourceBytes);
+                        byte[] signedBytes = new PhotoSignerImpl().sign(locale, type, sourceBytes);
                         File file = new File(path);
                         String filename = file.getName();
                         String[] split = filename.split("\\.");
@@ -78,7 +85,7 @@ public class StartBot
                         String name = split[0];
                         if (split.length > 1)
                             suf = split[1];
-                        File parentFile = file.getParentFile();                        
+                        File parentFile = file.getParentFile();
                         FileUtils.deleteQuietly(file);
 
                         File fileSign = new File(parentFile, name + "_sign." + suf);
@@ -95,8 +102,35 @@ public class StartBot
         }
     }
 
+    private Integer getType(String body)
+    {
+        String[] split = body.split(" ");
+        for (String string : split)
+        {
+            if (String.valueOf(CommandArgs.TYPE_1).equalsIgnoreCase(string))
+                return CommandArgs.TYPE_1;
+            if (String.valueOf(CommandArgs.TYPE_2).equalsIgnoreCase(string))
+                return CommandArgs.TYPE_2;
+        }
+        return CommandArgs.TYPE_1;
+    }
+
+    private String getLocale(String body)
+    {
+        String[] split = body.split(" ");
+        for (String string : split)
+        {
+            if (CommandArgs.LOCALE_RU.equalsIgnoreCase(string))
+                return CommandArgs.LOCALE_RU;
+            if (CommandArgs.LOCALE_EN.equalsIgnoreCase(string))
+                return CommandArgs.LOCALE_EN;
+        }
+        return CommandArgs.LOCALE_RU;
+    }
+
     public static void main(String[] args)
     {
+        DOMConfigurator.configure(FileUtil.getFromConfDir("log4j.xml"));
         new StartBot().start();
     }
 }

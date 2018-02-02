@@ -4,5 +4,5 @@ import java.io.IOException;
 
 public interface PhotoSigner
 {
-    byte[] sign(byte[] data) throws IOException;
+    byte[] sign(String locale, Integer type, byte[] data) throws IOException;
 }

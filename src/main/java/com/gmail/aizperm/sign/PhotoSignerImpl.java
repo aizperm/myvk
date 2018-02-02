@@ -16,13 +16,16 @@ public class PhotoSignerImpl implements PhotoSigner
 {
 
     @Override
-    public byte[] sign(byte[] data) throws IOException
+    public byte[] sign(String locale, Integer type, byte[] data) throws IOException
     {
-        File titleFile = ImgResource.getRu();
+        ByteArrayInputStream input = new ByteArrayInputStream(data);
+        BufferedImage sourceImg = ImageIO.read(input);
+        input.close();
+
+        File titleFile = ImgResource.getRu(locale, type, sourceImg.getWidth());
         PngImage pngImage = new PngImage();
         BufferedImage titleImg = pngImage.read(titleFile);
 
-        BufferedImage sourceImg = ImageIO.read(new ByteArrayInputStream(data));
         int sourceHeight = sourceImg.getHeight();
         int sourceWidth = sourceImg.getWidth();
 
@@ -61,6 +64,7 @@ public class PhotoSignerImpl implements PhotoSigner
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         ImageIO.write(sourceImg, "JPEG", output);
+        output.close();
         return output.toByteArray();
     }
 

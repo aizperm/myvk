@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,6 +27,14 @@ public class PhotoDownloaderTest
     @After
     public void deleteFile()
     {
+        try
+        {
+            VKProperties.load(new FileInputStream(new File("src/test/java/com/gmail/aizperm/vk/test.properties")));
+        }
+        catch (FileNotFoundException e)
+        {            
+            e.printStackTrace();
+        }
         File file = FileUtil.getMessageIdFilePath();
         if (file.exists())
             file.delete();
@@ -35,10 +45,12 @@ public class PhotoDownloaderTest
     {
         MessageDesc desc1 = new MessageDesc();
         desc1.setId(1);
+        desc1.setBody("img");
         desc1.getImageUrls().add("http://download1.ru");
 
         MessageDesc desc2 = new MessageDesc();
         desc2.setId(2);
+        desc2.setBody("img");
         desc2.getImageUrls().add("http://download2.ru");
 
         VKGetImages getter = getGetter(desc1, desc2);

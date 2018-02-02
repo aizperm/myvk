@@ -2,6 +2,8 @@ package com.gmail.aizperm.util;
 
 import java.io.File;
 
+import org.eclipse.jetty.util.StringUtil;
+
 import com.gmail.aizperm.vk.VKProperties;
 
 public class FileUtil
@@ -47,5 +49,51 @@ public class FileUtil
         File dir = new File(VKProperties.getDownloadDirPath());
         createDirs(dir);
         return dir;
+    }
+
+    public static File getConfDirFile()
+    {
+        String confdir = System.getProperty("conf.dir");
+        if (StringUtil.isBlank(confdir))
+        {
+            File conf = new File("conf");
+            if (conf.exists())
+                return conf;
+        }
+        else
+        {
+            File conf = new File(confdir);
+            if (conf.exists())
+                return conf;
+        }
+        throw new RuntimeException("Не найдена папка конфигурации: conf");
+    }
+
+    public static File getImgDirFile()
+    {
+        String confdir = System.getProperty("img.dir");
+        if (StringUtil.isBlank(confdir))
+        {
+            File conf = new File("img");
+            if (conf.exists())
+                return conf;
+        }
+        else
+        {
+            File conf = new File(confdir);
+            if (conf.exists())
+                return conf;
+        }
+        throw new RuntimeException("Не найдена папка конфигурации: img");
+    }
+
+    public static String getFromConfDir(String res)
+    {
+        return new File(getConfDirFile(), res).getAbsolutePath();
+    }
+
+    public static String getFromImgDir(String res)
+    {
+        return new File(getImgDirFile(), res).getAbsolutePath();
     }
 }

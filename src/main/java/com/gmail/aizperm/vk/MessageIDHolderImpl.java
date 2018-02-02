@@ -7,6 +7,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.io.IOUtils;
+import org.eclipse.jetty.util.StringUtil;
 
 import com.gmail.aizperm.util.FileUtil;
 
@@ -75,7 +76,9 @@ public class MessageIDHolderImpl implements MessageIDHolder
         File file = FileUtil.getMessageIdFilePath();
         try
         {
-            IOUtils.write(String.valueOf(id), new FileOutputStream(file), "UTF-8");
+            if (id == null)
+                IOUtils.write("", new FileOutputStream(file), "UTF-8");
+            else IOUtils.write(String.valueOf(id), new FileOutputStream(file), "UTF-8");
         }
         catch (Throwable e)
         {
@@ -90,7 +93,10 @@ public class MessageIDHolderImpl implements MessageIDHolder
             return null;
         try
         {
-            return Integer.parseInt(IOUtils.toString(new FileInputStream(file), "UTF-8"));
+            String string = IOUtils.toString(new FileInputStream(file), "UTF-8");
+            if (StringUtil.isBlank(string))
+                return null;
+            return Integer.parseInt(string);
         }
         catch (Throwable e)
         {

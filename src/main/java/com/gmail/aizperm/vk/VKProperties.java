@@ -1,5 +1,7 @@
 package com.gmail.aizperm.vk;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -7,6 +9,8 @@ import java.util.Properties;
 import org.eclipse.jetty.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.gmail.aizperm.util.FileUtil;
 
 public class VKProperties
 {
@@ -39,9 +43,21 @@ public class VKProperties
 
     private static void load()
     {
-        InputStream defResource = VKProperties.class.getResourceAsStream("config.properties");
-        load(defResource);
-        log.debug("default properties init");
+        if (props == null)
+        {
+            InputStream defResource = null;
+            try
+            {
+                String fromConfDir = FileUtil.getFromConfDir("config.properties");
+                defResource = new FileInputStream(fromConfDir);
+            }
+            catch (FileNotFoundException e)
+            {
+                e.printStackTrace();
+            }
+            load(defResource);
+            log.debug("default properties init");
+        }
     }
 
     public static void load(InputStream resource)

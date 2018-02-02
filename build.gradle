@@ -1,12 +1,12 @@
 apply plugin: 'java'
-
+apply plugin: 'application'
 
 repositories {    
     jcenter()
     mavenCentral() 
     flatDir {
        dirs 'lib'
-   }   
+   	}   
 }
 
 dependencies {    
@@ -19,4 +19,30 @@ dependencies {
     compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.4.6.v20170531'
     
     compile ':javapng:2.0'
+}
+
+mainClassName = 'com.gmail.aizperm.main.StartBot'
+
+jar {
+    baseName = 'myvk'
+    version =  '0.1.0'
+}
+
+applicationDistribution.from("conf/") {
+    into "conf"
+}
+
+applicationDistribution.from("img/") {
+    into "img"
+}
+
+startScripts << {
+ def lines = windowsScript.readLines().collect {
+  if (it ==~ /^set DEFAULT_JVM_OPTS=/) {
+   return 'set DEFAULT_JVM_OPTS=-Dconf.dir="%~dp0../conf" -Dimg.dir="%~dp0../img"\r\nset JAVA_HOME="D:/java/java64/java8"'
+  } else {
+   return it
+  }
+ }
+ windowsScript.withPrintWriter { writer -> lines.each { writer.println it } }
 }
