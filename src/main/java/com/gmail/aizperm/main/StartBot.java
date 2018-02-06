@@ -76,7 +76,10 @@ public class StartBot
                         String locale = getLocale(body);
                         Integer type = getType(body);
 
-                        byte[] sourceBytes = IOUtils.toByteArray(new FileInputStream(path));
+                        FileInputStream input = new FileInputStream(path);
+                        byte[] sourceBytes = IOUtils.toByteArray(input);
+                        input.close();
+                        
                         byte[] signedBytes = new PhotoSignerImpl().sign(locale, type, sourceBytes);
                         File file = new File(path);
                         String filename = file.getName();
@@ -89,7 +92,10 @@ public class StartBot
                         FileUtils.deleteQuietly(file);
 
                         File fileSign = new File(parentFile, name + "_sign." + suf);
-                        IOUtils.write(signedBytes, new FileOutputStream(fileSign));
+                        FileOutputStream output = new FileOutputStream(fileSign);
+                        IOUtils.write(signedBytes, output);
+                        output.close();
+                        
                         message.removePath(url);
                         message.addUrl2Path(url, fileSign.getAbsolutePath());
                     }

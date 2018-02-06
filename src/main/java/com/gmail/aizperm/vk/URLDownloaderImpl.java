@@ -61,7 +61,9 @@ public class URLDownloaderImpl implements URLDownloader
 
             String name = new File(url.getPath()).getName();
             outputFile = new File(dirMessage, name);
-            IOUtils.write(bytes, new FileOutputStream(outputFile));
+            FileOutputStream output = new FileOutputStream(outputFile);
+            IOUtils.write(bytes, output);
+            output.close();
             log.debug("Сохранили url {} в {}", urlString, outputFile.getAbsolutePath());
         }
         catch (Throwable e)

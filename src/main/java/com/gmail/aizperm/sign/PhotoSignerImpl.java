@@ -6,10 +6,20 @@ import java.awt.image.WritableRaster;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 
+import org.apache.commons.io.IOUtils;
+
+import com.gmail.aizperm.util.CommandArgs;
 import com.sixlegs.png.PngImage;
 
 public class PhotoSignerImpl implements PhotoSigner
@@ -62,10 +72,27 @@ public class PhotoSignerImpl implements PhotoSigner
             }
         }
 
+        ImageWriter jpgWriter = ImageIO.getImageWritersByFormatName("jpg").next();
+        ImageWriteParam jpgWriteParam = jpgWriter.getDefaultWriteParam();
+        jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_COPY_FROM_METADATA);
+        //jpgWriteParam.setCompressionQuality(1f);
+
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        ImageIO.write(sourceImg, "JPEG", output);
-        output.close();
+        MemoryCacheImageOutputStream outputImg = new MemoryCacheImageOutputStream(output);
+
+        jpgWriter.setOutput(outputImg);
+        IIOImage outputImage = new IIOImage(sourceImg, null, null);
+        jpgWriter.write(null, outputImage, jpgWriteParam);
+        jpgWriter.dispose();
+
         return output.toByteArray();
+    }
+
+    public static void main(String[] args) throws FileNotFoundException, IOException
+    {
+        byte[] data = IOUtils.toByteArray(new FileInputStream("d:/sDEct-zLSRA.jpg"));
+        byte[] sign = new PhotoSignerImpl().sign(CommandArgs.LOCALE_RU, 1, data);
+        IOUtils.write(sign, new FileOutputStream(new File("d:/1.jpg")));
     }
 
 }
