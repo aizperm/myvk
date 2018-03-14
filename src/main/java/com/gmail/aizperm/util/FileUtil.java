@@ -86,6 +86,24 @@ public class FileUtil
         }
         throw new RuntimeException("Не найдена папка конфигурации: img");
     }
+    
+    public static File getFontDirFile()
+    {
+        String confdir = System.getProperty("font.dir");
+        if (StringUtil.isBlank(confdir))
+        {
+            File conf = new File("fonts");
+            if (conf.exists())
+                return conf;
+        }
+        else
+        {
+            File conf = new File(confdir);
+            if (conf.exists())
+                return conf;
+        }
+        throw new RuntimeException("Не найдена папка конфигурации: font");
+    }
 
     public static String getFromConfDir(String res)
     {
@@ -95,5 +113,10 @@ public class FileUtil
     public static String getFromImgDir(String res)
     {
         return new File(getImgDirFile(), res).getAbsolutePath();
+    }
+    
+    public static String getFromFontDir(String font)
+    {
+        return new File(getFontDirFile(), font).getAbsolutePath();
     }
 }

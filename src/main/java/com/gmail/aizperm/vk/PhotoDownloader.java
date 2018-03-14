@@ -2,7 +2,6 @@ package com.gmail.aizperm.vk;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -44,14 +43,8 @@ public class PhotoDownloader
             String body = message.getBody();
             if (!StringUtil.isBlank(body))
             {
-                String[] split = body.split(" ");
-                String command = split[0];
-                List<String> asList = Arrays.asList("i", "img", "image");
-                if (asList.contains(command.toLowerCase()))
-                {
-                    downloadFromMessage(message);
-                    filtered.add(message);
-                }
+                downloadFromMessage(message);
+                filtered.add(message);
             }
             messageIdHolder.writeLastMessageID(message.getId());
         }

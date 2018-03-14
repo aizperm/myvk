@@ -8,13 +8,13 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.TreeMap;
 
-import com.gmail.aizperm.util.CommandArgs;
+import com.gmail.aizperm.util.PNGArgs;
 import com.gmail.aizperm.util.FileUtil;
 
 public class ImgResource
 {
-    private static int DEF_TYPE = CommandArgs.TYPE_1;
-    private static String DEF_LOCALE = CommandArgs.LOCALE_RU;
+    private static int DEF_TYPE = PNGArgs.TYPE_1;
+    private static String DEF_LOCALE = PNGArgs.LOCALE_RU;
 
     public static final File getRu(String locale, Integer type, int sourceWidth)
     {

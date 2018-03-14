@@ -55,6 +55,8 @@ public class PhotoSenderImpl
                 List<String> allAttachment = new ArrayList<>();
 
                 List<String> imageUrls = message.getImageUrls();
+                if (imageUrls.isEmpty())
+                    continue;
                 for (String url : imageUrls)
                 {
                     String path = message.getPath(url);

@@ -9,7 +9,7 @@ repositories {
    	}   
 }
 
-dependencies {    
+dependencies {    	
     compile 'org.slf4j:slf4j-api:1.7.21'
     compile 'org.slf4j:slf4j-log4j12:1.7.7'
     
@@ -23,7 +23,7 @@ dependencies {
 
 mainClassName = 'com.gmail.aizperm.main.StartBot'
 
-jar {
+jar {	
     baseName = 'myvk'
     version =  '0.1.0'
 }
@@ -36,13 +36,23 @@ applicationDistribution.from("img/") {
     into "img"
 }
 
-startScripts << {
+applicationDistribution.from("fonts/") {
+    into "fonts"
+}
+
+startScripts << { 
  def lines = windowsScript.readLines().collect {
   if (it ==~ /^set DEFAULT_JVM_OPTS=/) {
-   return 'set DEFAULT_JVM_OPTS=-Dconf.dir="%~dp0../conf" -Dimg.dir="%~dp0../img"\r\nset JAVA_HOME="D:/java/java64/java8"'
+   return 'set DEFAULT_JVM_OPTS=-Dconf.dir="%~dp0../conf" -Dimg.dir="%~dp0../img" -Dfont.dir="%~dp0../fonts"\r\nset JAVA_HOME="D:/java/java64/java8"'
   } else {
    return it
   }
  }
  windowsScript.withPrintWriter { writer -> lines.each { writer.println it } }
+}
+
+compileJava.options.encoding = 'UTF-8'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
 }

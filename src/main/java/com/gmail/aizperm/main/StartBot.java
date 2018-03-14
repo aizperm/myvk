@@ -16,8 +16,8 @@ import org.apache.log4j.xml.DOMConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.gmail.aizperm.sign.PhotoSignerImpl;
-import com.gmail.aizperm.util.CommandArgs;
+import com.gmail.aizperm.command.CommandArgs;
+import com.gmail.aizperm.command.CommandParser;
 import com.gmail.aizperm.util.FileUtil;
 import com.gmail.aizperm.vk.MessageDesc;
 import com.gmail.aizperm.vk.PhotoDownloader;
@@ -27,6 +27,7 @@ public class StartBot
 {
     private static Logger log = LoggerFactory.getLogger(StartBot.class);
     private static SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+    private PhotoSenderImpl sender = new PhotoSenderImpl();
 
     public void start()
     {
@@ -51,7 +52,7 @@ public class StartBot
             PhotoDownloader downloader = PhotoDownloader.builder().build();
             List<MessageDesc> messages = downloader.download();
             sign(messages);
-            new PhotoSenderImpl().send(messages);
+            sender.send(messages);
             log.info("sended: {}", messages.size());
         }
         catch (Exception e)
@@ -73,31 +74,34 @@ public class StartBot
                     try
                     {
                         String body = message.getBody();
-                        String locale = getLocale(body);
-                        Integer type = getType(body);
+                        CommandArgs command = new CommandParser().parse(body);
+                        if (command != null)
+                        {
+                            FileInputStream input = new FileInputStream(path);
+                            byte[] sourceBytes = IOUtils.toByteArray(input);
+                            input.close();
 
-                        FileInputStream input = new FileInputStream(path);
-                        byte[] sourceBytes = IOUtils.toByteArray(input);
-                        input.close();
-                        
-                        byte[] signedBytes = new PhotoSignerImpl().sign(locale, type, sourceBytes);
-                        File file = new File(path);
-                        String filename = file.getName();
-                        String[] split = filename.split("\\.");
-                        String suf = "";
-                        String name = split[0];
-                        if (split.length > 1)
-                            suf = split[1];
-                        File parentFile = file.getParentFile();
-                        FileUtils.deleteQuietly(file);
+                            command.getArgs().addArg(sourceBytes);
+                            byte[] signedBytes = (byte[]) command.execute();
 
-                        File fileSign = new File(parentFile, name + "_sign." + suf);
-                        FileOutputStream output = new FileOutputStream(fileSign);
-                        IOUtils.write(signedBytes, output);
-                        output.close();
-                        
-                        message.removePath(url);
-                        message.addUrl2Path(url, fileSign.getAbsolutePath());
+                            File file = new File(path);
+                            String filename = file.getName();
+                            String[] split = filename.split("\\.");
+                            String suf = "";
+                            String name = split[0];
+                            if (split.length > 1)
+                                suf = split[1];
+                            File parentFile = file.getParentFile();
+                            FileUtils.deleteQuietly(file);
+
+                            File fileSign = new File(parentFile, name + "_sign." + suf);
+                            FileOutputStream output = new FileOutputStream(fileSign);
+                            IOUtils.write(signedBytes, output);
+                            output.close();
+
+                            message.removePath(url);
+                            message.addUrl2Path(url, fileSign.getAbsolutePath());
+                        }
                     }
                     catch (Exception e)
                     {
@@ -106,32 +110,6 @@ public class StartBot
                 }
             }
         }
-    }
-
-    private Integer getType(String body)
-    {
-        String[] split = body.split(" ");
-        for (String string : split)
-        {
-            if (String.valueOf(CommandArgs.TYPE_1).equalsIgnoreCase(string))
-                return CommandArgs.TYPE_1;
-            if (String.valueOf(CommandArgs.TYPE_2).equalsIgnoreCase(string))
-                return CommandArgs.TYPE_2;
-        }
-        return CommandArgs.TYPE_1;
-    }
-
-    private String getLocale(String body)
-    {
-        String[] split = body.split(" ");
-        for (String string : split)
-        {
-            if (CommandArgs.LOCALE_RU.equalsIgnoreCase(string))
-                return CommandArgs.LOCALE_RU;
-            if (CommandArgs.LOCALE_EN.equalsIgnoreCase(string))
-                return CommandArgs.LOCALE_EN;
-        }
-        return CommandArgs.LOCALE_RU;
     }
 
     public static void main(String[] args)

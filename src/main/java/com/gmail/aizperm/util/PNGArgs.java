@@ -1,6 +1,6 @@
 package com.gmail.aizperm.util;
 
-public interface CommandArgs
+public interface PNGArgs
 {
     public static final String LOCALE_RU = "ru";
     public static final String LOCALE_EN = "en";

@@ -1,5 +1,9 @@
 package com.gmail.aizperm.sign;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
@@ -19,7 +23,8 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 import org.apache.commons.io.IOUtils;
 
-import com.gmail.aizperm.util.CommandArgs;
+import com.gmail.aizperm.util.PNGArgs;
+import com.gmail.aizperm.util.FontUtils;
 import com.sixlegs.png.PngImage;
 
 public class PhotoSignerImpl implements PhotoSigner
@@ -75,7 +80,7 @@ public class PhotoSignerImpl implements PhotoSigner
         ImageWriter jpgWriter = ImageIO.getImageWritersByFormatName("jpg").next();
         ImageWriteParam jpgWriteParam = jpgWriter.getDefaultWriteParam();
         jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_COPY_FROM_METADATA);
-        //jpgWriteParam.setCompressionQuality(1f);
+        // jpgWriteParam.setCompressionQuality(1f);
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         MemoryCacheImageOutputStream outputImg = new MemoryCacheImageOutputStream(output);
@@ -91,8 +96,55 @@ public class PhotoSignerImpl implements PhotoSigner
     public static void main(String[] args) throws FileNotFoundException, IOException
     {
         byte[] data = IOUtils.toByteArray(new FileInputStream("d:/sDEct-zLSRA.jpg"));
-        byte[] sign = new PhotoSignerImpl().sign(CommandArgs.LOCALE_RU, 1, data);
+        byte[] sign = new PhotoSignerImpl().sign(PNGArgs.LOCALE_RU, 1, data);
         IOUtils.write(sign, new FileOutputStream(new File("d:/1.jpg")));
+    }
+
+    @Override
+    public byte[] sign(String text, String fontName, byte[] data) throws IOException
+    {
+        ByteArrayInputStream input = new ByteArrayInputStream(data);
+        BufferedImage sourceImg = ImageIO.read(input);
+        input.close();
+
+        int width = sourceImg.getWidth();
+        int height = sourceImg.getHeight();
+
+        Graphics2D g = (Graphics2D) sourceImg.getGraphics();
+        int x = -1;
+        int y = -1;
+        int percent = 15;
+        while (true)
+        {
+            Font font = FontUtils.getFont(fontName, (float) (height * percent / 100));
+
+            g.setFont(font);
+            g.setColor(Color.GREEN);
+
+            FontMetrics fm = g.getFontMetrics();
+            x = width - fm.stringWidth(text);
+            y = height - fm.getDescent();
+            if (x >= 0 || percent <= 1)
+                break;
+            percent--;
+        }
+
+        g.drawString(text, x, y);
+        g.dispose();
+
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        MemoryCacheImageOutputStream outputImg = new MemoryCacheImageOutputStream(output);
+
+        ImageWriter jpgWriter = ImageIO.getImageWritersByFormatName("jpg").next();
+        ImageWriteParam jpgWriteParam = jpgWriter.getDefaultWriteParam();
+        jpgWriteParam.setCompressionMode(ImageWriteParam.MODE_COPY_FROM_METADATA);
+
+        jpgWriter.setOutput(outputImg);
+        IIOImage outputImage = new IIOImage(sourceImg, null, null);
+        jpgWriter.write(null, outputImage, jpgWriteParam);
+        jpgWriter.dispose();
+
+        return output.toByteArray();
     }
 
 }
